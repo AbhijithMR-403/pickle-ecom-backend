@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
@@ -36,10 +37,7 @@ class Product(models.Model):
     # Categories and Topics
     categories = models.ManyToManyField(Category, related_name='products', blank=True)
     materials = models.JSONField(default=list, blank=True, help_text="List of materials used in the product")
-    
-    # Media
-    image_url = models.URLField(max_length=500, blank=True, null=True, help_text="External URL of the product image")
-    
+
     # Dates
     created_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)
@@ -61,3 +59,29 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='product_images/', help_text="Upload product image")
+    is_highlight = models.BooleanField(default=False, help_text="Is this the highlight (main) image?")
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        super().clean()
+        # Enforce maximum of 3 images per product (max 3 allowed)
+        if not self.pk: # Only check when creating a new image
+            if self.product.images.count() >= 3:
+                raise ValidationError("A product can have a maximum of 3 images.")
+
+    def save(self, *args, **kwargs):
+        self.full_clean() # Runs the clean() method validation
+
+        # If this image is set as the highlight, unset any existing highlight for this product
+        if self.is_highlight:
+            ProductImage.objects.filter(product=self.product, is_highlight=True).exclude(pk=self.pk).update(is_highlight=False)
+            
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Image for {self.product.name}"
+

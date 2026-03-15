@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 from rest_framework import generics
-from products.models import Product, Category
+from products.models import Product, Category, ProductImage
 from .serializers import ProductSerializer, CategorySerializer
 
 class ProductCreateView(generics.CreateAPIView):
