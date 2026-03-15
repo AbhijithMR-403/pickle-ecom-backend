@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "products",
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -147,3 +149,8 @@ CACHES = {
         "TIMEOUT": 345600,  # 4 days in seconds
     }
 }
+
+# CORS settings
+# Read comma-separated URLs from .env
+_cors_origins = config("CORS_ALLOWED_ORIGINS", default="http://localhost:5173,http://localhost:3000")
+CORS_ALLOWED_ORIGINS = [url.strip() for url in _cors_origins.split(",") if url.strip()]
