@@ -6,6 +6,9 @@ from django.core.exceptions import ValidationError
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
+    icon = models.CharField(max_length=255, blank=True, null=True)
+    color = models.CharField(max_length=255, blank=True, null=True)
+    show_on_homepage = models.BooleanField(default=False, help_text="Show this category on the homepage")
     description = models.TextField(blank=True, null=True)
     created_date = models.DateTimeField(auto_now_add=True)
     
@@ -14,6 +17,14 @@ class Category(models.Model):
         
     class Meta:
         verbose_name_plural = 'Categories'
+
+class Ingredient(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
 
 class Product(models.Model):
     name = models.CharField(max_length=255)
@@ -27,20 +38,32 @@ class Product(models.Model):
     stock_quantity = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     
+    TASTE_CHOICES = [
+        ('Very_Spicy', 'Very Spicy'),
+        ('Medium_Spicy', 'Medium Spicy'),
+        ('Mild_Spicy', 'Mild Spicy'),
+        ('Sour', 'Sour'),
+        ('Sweet', 'Sweet'),
+        ('Sweet_Sour', 'Sweet & Sour'),
+        ('Spicy_Sour', 'Spicy & Sour'),
+        ('Spicy_Sweet', 'Spicy & Sweet'),
+    ]
+
     # Food Specific Fields
     is_vegetarian = models.BooleanField(default=True)
+    is_preservation_free = models.BooleanField(default=False)
+    taste = models.CharField(max_length=50, choices=TASTE_CHOICES, blank=True, null=True)
     net_weight = models.CharField(max_length=100, blank=True, null=True, help_text="e.g., 250g, 1kg")
-    ingredients = models.TextField(blank=True, null=True)
-    nutritional_information = models.TextField(blank=True, null=True)
     shelf_life_days = models.PositiveIntegerField(blank=True, null=True, help_text="Shelf life in days")
     
     # Categories and Topics
     categories = models.ManyToManyField(Category, related_name='products', blank=True)
-    materials = models.JSONField(default=list, blank=True, help_text="List of materials used in the product")
+    key_ingredients = models.ManyToManyField(Ingredient, related_name='products', blank=True)
 
     # Dates
     created_date = models.DateTimeField(auto_now_add=True)
     update_date = models.DateTimeField(auto_now=True)
+    best_seller = models.BooleanField(default=False)
 
     is_deleted = models.BooleanField(default=False)
 

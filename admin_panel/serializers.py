@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from products.models import Product, Category, ProductImage
+from products.models import Product, Category, ProductImage, Ingredient
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,6 +25,12 @@ class ProductSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
         help_text="The main highlight image file."
+    )
+    ingredients = serializers.CharField(
+        write_only=True,
+        required=False,
+        allow_blank=True,
+        help_text="Comma-separated list of ingredient names to add/create."
     )
     
     class Meta:
@@ -65,8 +71,16 @@ class ProductSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', [])
         highlight_image = validated_data.pop('highlight_image', None)
+        ingredients_str = validated_data.pop('ingredients', None)
+        
         product = super().create(validated_data)
         
+        if ingredients_str:
+            names = [name.strip() for name in ingredients_str.split(',') if name.strip()]
+            for name in names:
+                ingredient, _ = Ingredient.objects.get_or_create(name=name)
+                product.key_ingredients.add(ingredient)
+                
         if highlight_image:
             ProductImage.objects.create(
                 product=product,
@@ -86,9 +100,17 @@ class ProductSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         uploaded_images = validated_data.pop('uploaded_images', None)
         highlight_image = validated_data.pop('highlight_image', None)
+        ingredients_str = validated_data.pop('ingredients', None)
         
         instance = super().update(instance, validated_data)
         
+        if ingredients_str is not None:
+             names = [name.strip() for name in ingredients_str.split(',') if name.strip()]
+             instance.key_ingredients.clear()
+             for name in names:
+                 ingredient, _ = Ingredient.objects.get_or_create(name=name)
+                 instance.key_ingredients.add(ingredient)
+                 
         if uploaded_images is not None or highlight_image is not None:
             # Recreate all images for this product
             instance.images.all().delete()
@@ -109,3 +131,9 @@ class ProductSerializer(serializers.ModelSerializer):
                     )
                 
         return instance
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # Convert key_ingredients to a comma-separated string for the frontend
+        ret['ingredients'] = ', '.join([ing.name for ing in instance.key_ingredients.all()])
+        return ret

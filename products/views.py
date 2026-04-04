@@ -11,7 +11,7 @@ class ProductListAPIView(generics.ListAPIView):
     """
     serializer_class = ProductSerializer
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ['name', 'description', 'sub_description']
+    search_fields = ['name', 'description', 'sub_description', 'key_ingredients__name']
     ordering_fields = ['price', 'created_date', 'stock_quantity']
     
     def get_queryset(self):
@@ -19,11 +19,13 @@ class ProductListAPIView(generics.ListAPIView):
         Optionally restricts the returned products by filtering against query parameters.
         Only active products are returned.
         """
-        queryset = Product.objects.filter(is_active=True).prefetch_related('categories')
+        queryset = Product.objects.filter(is_active=True).prefetch_related('categories', 'key_ingredients', 'images')
         
         product_ids = self.request.query_params.get('id')
         categories = self.request.query_params.get('category')
         is_vegetarian = self.request.query_params.get('is_vegetarian')
+        is_preservation_free = self.request.query_params.get('is_preservation_free')
+        taste = self.request.query_params.get('taste')
         min_price = self.request.query_params.get('min_price')
         max_price = self.request.query_params.get('max_price')
         in_stock = self.request.query_params.get('in_stock')
@@ -46,6 +48,14 @@ class ProductListAPIView(generics.ListAPIView):
              # Convert to boolean
              is_veg_bool = str(is_vegetarian).lower() in ['true', '1', 't', 'y', 'yes']
              queryset = queryset.filter(is_vegetarian=is_veg_bool)
+             
+        if is_preservation_free is not None:
+             is_pres_free_bool = str(is_preservation_free).lower() in ['true', '1', 't', 'y', 'yes']
+             queryset = queryset.filter(is_preservation_free=is_pres_free_bool)
+             
+        if taste:
+             taste_list = [t.strip() for t in taste.split(',')]
+             queryset = queryset.filter(taste__in=taste_list)
              
         if min_price is not None:
             try:
