@@ -6,6 +6,23 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = '__all__'
 
+    def validate(self, data):
+        show_on_homepage = data.get('show_on_homepage', getattr(self.instance, 'show_on_homepage', False))
+        icon = data.get('icon', getattr(self.instance, 'icon', None))
+        color = data.get('color', getattr(self.instance, 'color', None))
+
+        if show_on_homepage:
+            errors = {}
+            if not icon:
+                errors['error'] = "Icon is required when category is shown on homepage."
+            if not color:
+                errors['error'] = "Color is required when category is shown on homepage."
+            
+            if errors:
+                raise serializers.ValidationError(errors)
+                
+        return data
+
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:

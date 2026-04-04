@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import Product
-from .serializers import ProductSerializer
+from .models import Product, Category
+from .serializers import ProductSerializer, CategorySerializer
 
 class ProductListAPIView(generics.ListAPIView):
     """
@@ -10,6 +10,8 @@ class ProductListAPIView(generics.ListAPIView):
     Also supports searching by name/description and ordering by price/created_date.
     """
     serializer_class = ProductSerializer
+    permission_classes = []
+    authentication_classes = []  # Ignore any token — fully public
     filter_backends = [SearchFilter, OrderingFilter]
     search_fields = ['name', 'description', 'sub_description', 'key_ingredients__name']
     ordering_fields = ['price', 'created_date', 'stock_quantity']
@@ -77,3 +79,16 @@ class ProductListAPIView(generics.ListAPIView):
                 queryset = queryset.filter(stock_quantity=0)
              
         return queryset
+
+
+class CategoryListAPIView(generics.ListAPIView):
+    """
+    Public endpoint — returns categories where show_on_homepage=True.
+    No authentication required.
+    """
+    serializer_class = CategorySerializer
+    permission_classes = []
+    authentication_classes = []
+
+    def get_queryset(self):
+        return Category.objects.filter(show_on_homepage=True).order_by('name')

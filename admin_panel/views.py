@@ -23,7 +23,7 @@ class ProductUpdateView(generics.UpdateAPIView):
     permission_classes = []
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    lookup_field = 'pk'
+    # lookup_field = 'pk'
 
 class CategoryListCreateView(generics.ListCreateAPIView):
     """
