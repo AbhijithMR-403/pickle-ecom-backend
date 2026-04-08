@@ -1,7 +1,20 @@
 from rest_framework import generics
 from rest_framework.filters import SearchFilter, OrderingFilter
-from .models import Product, Category
-from .serializers import ProductSerializer, CategorySerializer
+from .models import Product, Category, Banner
+from .serializers import ProductSerializer, CategorySerializer, BannerSerializer
+
+class BannerListAPIView(generics.ListAPIView):
+    """
+    Public endpoint — returns active banners.
+    No authentication required.
+    """
+    serializer_class = BannerSerializer
+    permission_classes = []
+    authentication_classes = []
+
+    def get_queryset(self):
+        return Banner.objects.filter(is_active=True).order_by('-created_date')
+
 
 class ProductListAPIView(generics.ListAPIView):
     """

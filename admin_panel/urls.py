@@ -19,4 +19,9 @@ urlpatterns = [
     path('categories', views.CategoryListCreateView.as_view(), name='category-list-create'),
     path('categories/<int:pk>/update', views.CategoryUpdateView.as_view(), name='category-update'),
     path('categories/<int:pk>/delete', views.CategoryDestroyView.as_view(), name='category-delete'),
+    
+    # Banners
+    path('banners', views.BannerListCreateView.as_view(), name='banner-list-create'),
+    path('banners/<int:pk>/update', views.BannerUpdateView.as_view(), name='banner-update'),
+    path('banners/<int:pk>/delete', views.BannerDestroyView.as_view(), name='banner-delete'),
 ]

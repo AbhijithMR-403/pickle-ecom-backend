@@ -1,5 +1,17 @@
 from rest_framework import serializers
-from .models import Product, Category, ProductImage, Ingredient
+from .models import Product, Category, ProductImage, Ingredient, Banner
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.product:
+            ret['product_details'] = ProductSerializer(instance.product, context=self.context).data
+        return ret
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:

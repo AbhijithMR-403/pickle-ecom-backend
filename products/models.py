@@ -4,6 +4,16 @@ from django.core.exceptions import ValidationError
 
 # Create your models here.
 
+class Banner(models.Model):
+    title = models.CharField(max_length=255, blank=True, null=True)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='banners')
+    image = models.ImageField(upload_to='banners/', help_text="Separate image with 21:9 or 16:9 ratio")
+    is_active = models.BooleanField(default=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title if self.title else f"Banner {self.id}"
+
 class Category(models.Model):
     name = models.CharField(max_length=255)
     icon = models.CharField(max_length=255, blank=True, null=True)

@@ -1,8 +1,8 @@
 from django.shortcuts import render
 
 from rest_framework import generics
-from products.models import Product, Category, ProductImage
-from .serializers import ProductSerializer, CategorySerializer
+from products.models import Product, Category, ProductImage, Banner
+from .serializers import ProductSerializer, CategorySerializer, BannerSerializer
 
 class ProductCreateView(generics.CreateAPIView):
     """
@@ -59,3 +59,31 @@ class CategoryDestroyView(generics.DestroyAPIView):
     permission_classes = []
     queryset = Category.objects.all()
     lookup_field = 'pk'
+
+class BannerListCreateView(generics.ListCreateAPIView):
+    """
+    API view to list and create Banners.
+    """
+    permission_classes = []
+    authentication_classes = []
+    
+    queryset = Banner.objects.all()
+    serializer_class = BannerSerializer
+
+class BannerUpdateView(generics.UpdateAPIView):
+    """
+    API view to update an existing Banner.
+    """
+    permission_classes = []
+    queryset = Banner.objects.all()
+    serializer_class = BannerSerializer
+    lookup_field = 'pk'
+
+class BannerDestroyView(generics.DestroyAPIView):
+    """
+    API view to delete an existing Banner.
+    """
+    permission_classes = []
+    queryset = Banner.objects.all()
+    lookup_field = 'pk'
+
